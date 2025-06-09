@@ -1,0 +1,33 @@
+type FileDetails = record {
+    fileName: text;
+    fileHash: text;
+    uploadTime: int;
+    fileContent: vec nat8;
+    institutionId: text;
+};
+
+type UserFileDetails = record {
+    fileName: text;
+    fileContent: vec nat8;
+    uploadTime: int;
+    userId: text;
+    docName: text;
+    issuer: text;
+    owner: text;
+    status: text;
+};
+
+service : {
+    // Institution File Operations
+    uploadFile: (text, vec nat8, text, text) -> (record { fileId: nat });
+    getFileDetails: (nat) -> (opt FileDetails) query;
+    getInstitutionFiles: (text) -> (vec FileDetails) query;
+    downloadFile: (nat) -> (opt vec nat8) query;
+    deleteFile: (nat) -> (bool);
+
+    // User File Operations
+    uploadUserFile: (text, vec nat8, text, text, text, text) -> (record { fileId: nat });
+    getUserFileDetails: (nat) -> (opt UserFileDetails) query;
+    getUserFiles: (text) -> (vec UserFileDetails) query;
+    downloadUserFile: (nat) -> (opt vec nat8) query;
+}
