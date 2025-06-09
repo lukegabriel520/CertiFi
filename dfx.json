@@ -1,0 +1,18 @@
+{
+  "canisters": {
+    "certifi_frontend": {
+      "frontend": {
+        "entrypoint": "frontend/build/index.html"
+      },
+      "source": ["frontend/build"],
+      "type": "assets"
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    }
+  },
+  "version": 1
+}
