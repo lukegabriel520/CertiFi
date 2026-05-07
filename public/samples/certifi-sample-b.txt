@@ -1,0 +1,3 @@
+CertiFi public demo sample B
+Different content from sample A.
+Use this to see a deliberate hash mismatch when paired with sample A’s manifest entry.

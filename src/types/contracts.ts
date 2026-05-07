@@ -1,0 +1,73 @@
+import { BigNumber } from 'ethers';
+import type { ContractTransactionResponse } from 'ethers';
+
+export interface Document {
+  issuer: string;
+  recipient: string;
+  documentHash: string;
+  metadataURI: string;
+  timestamp: BigNumber;
+  expirationDate: BigNumber;
+  isValid: boolean;
+  isRevoked: boolean;
+}
+
+export interface VerificationRequest {
+  documentId: string;
+  requester: string;
+  verifier: string;
+  isVerified: boolean;
+  isRejected: boolean;
+  verificationNotes: string;
+  timestamp: BigNumber;
+}
+
+export enum UserRole {
+  NONE = 0,
+  USER = 1,
+  VERIFIER = 2,
+  INSTITUTION = 3
+}
+
+export interface CertificationContract {
+  owner: () => Promise<string>;
+  documentCount: () => Promise<BigNumber>;
+  
+  userRoles: (address: string) => Promise<number>;
+  registerUser: (user: string, role: UserRole) => Promise<ContractTransactionResponse>;
+  updateUserRole: (user: string, newRole: UserRole) => Promise<ContractTransactionResponse>;
+  
+  issueDocument: (
+    documentId: string,
+    recipient: string,
+    documentHash: string,
+    metadataURI: string,
+    expirationDays: number
+  ) => Promise<ContractTransactionResponse>;
+  
+  revokeDocument: (documentId: string) => Promise<ContractTransactionResponse>;
+  getDocument: (documentId: string) => Promise<Document>;
+  isDocumentValid: (documentId: string) => Promise<boolean>;
+  
+  requestVerification: (documentId: string, verifier: string) => Promise<ContractTransactionResponse>;
+  completeVerification: (
+    requestId: string,
+    isVerified: boolean,
+    notes: string
+  ) => Promise<ContractTransactionResponse>;
+  
+  getUserDocuments: (user: string) => Promise<string[]>;
+  getInstitutionDocuments: (institution: string) => Promise<string[]>;
+  getDocumentVerifications: (documentId: string) => Promise<string[]>;
+  getVerificationRequest: (requestId: string) => Promise<VerificationRequest>;
+  
+  on: (event: string, listener: (...args: unknown[]) => void) => void;
+  removeListener: (event: string, listener: (...args: unknown[]) => void) => void;
+}
+
+export interface ContractDeploymentInfo {
+  network: string;
+  contractAddress: string;
+  deployer: string;
+  timestamp: string;
+}

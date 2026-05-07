@@ -1,0 +1,3 @@
+CertiFi public demo sample A
+Line 2 — fixed bytes for SHA-256 pinning.
+Issued for offline verification only.
