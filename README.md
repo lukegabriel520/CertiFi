@@ -1,145 +1,37 @@
-# CertiFi - Blockchain Certificate Verification System
+# CertiFi
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Built with Hardhat](https://img.shields.io/badge/Built%20with-Hardhat-9cf.svg)](https://hardhat.org/)
-[![React](https://img.shields.io/badge/Frontend-React-61dafb.svg)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC.svg)](https://www.typescriptlang.org/)
+CertiFi is a small web application that ties digital documents to the Ethereum blockchain so issuers can record certificates, recipients can request checks verifiers perform, and anyone looking at the app can reason about whether a file’s fingerprint lines up with what was stored on chain. Think of it as a prototype for “proof a school or company issued this PDF” without replacing a full legal records system; it is aimed at learning, demos, and test networks rather than production custody of sensitive data.
 
-CertiFi is a decentralized application (dApp) built on the Ethereum blockchain that provides a secure and transparent way to issue, verify, and manage digital certificates. The system supports three types of users: certificate issuers (Institutions), verifiers, and end-users.
+The idea in plain terms: someone uploads or points at a file, the app hashes it, and that hash can be registered in a smart contract together with who issued it and who receives it. A separate verifier role can then confirm or reject verification requests. Regular wallet holders use MetaMask to sign transactions when you point the app at a deployed contract.
 
-## ✨ Features
+## What is in this repository
 
-- **Role-Based Access Control**: Three distinct user roles - User, Verifier, and Institution
-- **Blockchain-Powered**: Immutable certificate storage on the Ethereum blockchain
-- **MetaMask Integration**: Secure wallet connection and transaction signing
-- **Responsive UI**: Works on desktop and mobile devices
-- **Sepolia Testnet Ready**: Deploy and test with test ETH
+The frontend is a React application built with Vite and TypeScript. Styling uses Tailwind-style utility classes. Routing sends visitors to a home page, an optional wallet-free demo path, a dashboard behind login, and role-specific screens for issuing certificates (institution) and verifying documents (verifier).
 
-## Repository layout
+The on-chain logic lives in a Solidity contract named Certification. Hardhat compiles it, generates TypeScript bindings under typechain, and can deploy to a local network or to Sepolia when you supply RPC details and a funded private key in environment variables. A deploy script registers the deployer with appropriate roles and can write deployment metadata for the team.
 
-| Path | Purpose |
-|------|---------|
-| `src/pages/` | Route-level screens (home, dashboard, `/demo`, issue, verify) |
-| `src/components/` | Shared UI (Header, Footer, FileUpload, `ProtectedRoute`, debug widgets) |
-| `src/context/`, `src/utils/`, `src/demo/` | Auth, chain helpers, bundled demo manifest |
-| `api/` | Vercel serverless handlers (e.g. `verify-document`) |
-| `config/` | Tailwind config (referenced from root `postcss.config.js`) |
-| `contracts/`, `scripts/`, `test/` | Hardhat Solidity, deploy/seed scripts, tests |
-| `public/` | Static assets including `samples/` for the guest demo |
+There is also a Vercel-style serverless handler under api that can check a document hash and recipient against the live contract when the hosting environment provides RPC URL and contract address secrets. The sample environment file lists the variable names the project expects.
 
-## 🚀 Quick Start
+## How the pieces fit together
 
-### Prerequisites
+Institutions (or the contract owner) register users with roles. Institutions issue documents identified by hash and metadata pointers. End users can ask for verification; verifiers complete those requests on chain. The landing flow can hash a local file with SHA-256 and, when the app is configured with a contract address, tie that into wallet-driven flows. If the contract is not configured for your build, the UI still directs people to the demo path for offline or bundled sample verification.
 
-- Node.js (v18 or later)
-- npm (v9 or later) or yarn
-- MetaMask browser extension
-- Sepolia test ETH (get some from a [faucet](https://sepoliafaucet.com/))
+## Getting started (developers)
 
-### Installation
+Install Node.js (a recent LTS version is fine), clone the repo, and run npm install in the project root.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/certifi2.git
-   cd certifi2
-   ```
+Copy .env.example to .env and fill in values you need. At minimum, live wallet features expect VITE_CONTRACT_ADDRESS and matching chain settings for something like Sepolia; Hardhat deployment expects SEPOLIA_RPC_URL and PRIVATE_KEY when targeting that network.
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+Typical commands:
 
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-   Edit the `.env` file with your configuration (see [Configuration](#-configuration) section)
+- npm run dev — start the Vite development server for the UI.
+- npm run compile — compile Solidity with Hardhat.
+- npm run deploy — run the default deploy script against localhost (requires a local Hardhat node if you use that network).
+- npx hardhat run scripts/deploy.ts --network sepolia — deploy to Sepolia after configuring .env for that network.
+- npm run seed:demo — optional helper to seed demo documents on Sepolia when documented in package scripts.
 
-## 🔧 Configuration
+Production builds for hosts such as Vercel may use npm run vercel-build, which compiles contracts then builds the frontend so generated artifacts stay in sync.
 
-Create a `.env` file in the root directory with the following variables:
+## License and expectations
 
-```env
-# Required for deployment
-SEPOLIA_RPC_URL=your_sepolia_rpc_url
-PRIVATE_KEY=your_private_key
-
-# Optional (for contract verification)
-ETHERSCAN_API_KEY=your_etherscan_api_key
-
-# Frontend configuration (auto-updated during deployment)
-VITE_CONTRACT_ADDRESS=0x...
-VITE_DEFAULT_CHAIN_ID=11155111
-VITE_SUPPORTED_CHAINS=11155111
-VITE_NETWORK_NAMES='{"11155111":"Sepolia"}'
-```
-
-## 🛠 Deployment
-
-### Deploy Smart Contract to Sepolia
-
-1. **Fund your deployer account** with Sepolia ETH from a [faucet](https://sepoliafaucet.com/)
-
-2. **Deploy the contract**:
-   ```bash
-   npx hardhat run scripts/deploy-sepolia.ts --network sepolia
-   ```
-   This will:
-   - Deploy the Certification contract
-   - Set up roles
-   - Verify the contract on Etherscan (if API key is provided)
-   - Update frontend environment variables
-
-### Start the Frontend
-
-1. **Start the development server**:
-   ```bash
-   npm run dev
-   ```
-
-2. Open [http://localhost:5173](http://localhost:5173) in your browser
-
-## 📱 Usage
-
-### For Institutions
-1. Connect your MetaMask wallet (Institution account)
-2. Navigate to the Dashboard
-3. Issue new certificates by providing recipient details and document hash
-4. Track issued certificates
-
-### For Verifiers
-1. Connect your MetaMask wallet (Verifier account)
-2. View verification requests
-3. Verify or reject certificate authenticity
-
-### For Users
-1. Connect your MetaMask wallet
-2. View your certificates
-3. Share certificate hashes for verification
-
-## 📚 Documentation
-
-- [Smart Contract Documentation](./docs/contracts.md)
-- [Frontend Architecture](./docs/frontend.md)
-- [Deployment Guide](./docs/deployment.md)
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read our [Contributing Guide](./CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [Hardhat](https://hardhat.org/) - Ethereum development environment
-- [React](https://reactjs.org/) - Frontend library
-- [Ethers.js](https://docs.ethers.org/) - Ethereum wallet implementation
-- [Vite](https://vitejs.dev/) - Frontend build tool
-
----
-
-<div align="center">
-  Made with ❤️ by the CertiFi Team
-</div>
+Treat keys, RPC endpoints, and test ether as sensitive. This codebase is a learning and demonstration stack; audits, legal review, and operational hardening would be required before any real-world attestation service relied on it.
